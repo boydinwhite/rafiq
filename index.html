@@ -645,6 +645,10 @@
     box.classList.add('filled');
   }
 
+  function getActiveLanguage(){
+    return document.documentElement.lang === 'ar' ? 'ar' : 'en';
+  }
+
   async function toggleCamera(){
     const video = document.getElementById('camVideo');
     const placeholder = document.getElementById('camPlaceholder');
@@ -685,7 +689,8 @@
     const detectBtn = document.getElementById('detectBtn');
     pill.classList.add('show');
     detectBtn.disabled = true;
-    box.textContent = language === 'ar' ? 'جارٍ تحليل إشارة يدك…' : 'Analyzing your hand gesture…';
+    const activeLanguage = getActiveLanguage();
+    box.textContent = activeLanguage === 'ar' ? 'جارٍ تحليل إشارة يدك…' : 'Analyzing your hand gesture…';
     try{
       const recognizer = await loadGestureRecognizer();
       const video = document.getElementById('camVideo');
@@ -695,22 +700,22 @@
       await new Promise(requestAnimationFrame);
       const result = recognizer.recognizeForVideo(video, performance.now());
       const topGesture = result.gestures?.[0]?.[0];
-      const gesturePhrases = language === 'ar' ? GESTURE_PHRASES_AR : GESTURE_PHRASES_EN;
+      const gesturePhrases = activeLanguage === 'ar' ? GESTURE_PHRASES_AR : GESTURE_PHRASES_EN;
       const phrase = topGesture && gesturePhrases[topGesture.categoryName];
       if(phrase){
-        setOutput(phrase, language);
-        const gestureName = language === 'ar'
+        setOutput(phrase, activeLanguage);
+        const gestureName = activeLanguage === 'ar'
           ? (GESTURE_NAMES_AR[topGesture.categoryName] || topGesture.categoryName.replace('_', ' '))
           : topGesture.categoryName.replace('_', ' ');
-        showToast((language === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + gestureName);
+        showToast((activeLanguage === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + gestureName);
       }else{
         currentText = "";
-        box.textContent = language === 'ar' ? 'لم يتم التعرف على إشارة مدعومة. ضع يدًا واحدة بوضوح أمام الكاميرا وحاول مرة أخرى.' : 'No supported gesture detected. Hold one hand clearly in view and try again.';
+        box.textContent = activeLanguage === 'ar' ? 'لم يتم التعرف على إشارة مدعومة. ضع يدًا واحدة بوضوح أمام الكاميرا وحاول مرة أخرى.' : 'No supported gesture detected. Hold one hand clearly in view and try again.';
         box.classList.remove('filled');
       }
     }catch(error){
-      box.textContent = language === 'ar' ? 'تعذر بدء التعرف على الإشارة. افتح الصفحة عبر HTTPS أو localhost وحاول مرة أخرى.' : 'Gesture recognition could not start. Serve this page over HTTPS or localhost and try again.';
-      showToast(language === 'ar' ? 'تعذر تحميل نموذج الإشارة' : 'Could not load the gesture model');
+      box.textContent = activeLanguage === 'ar' ? 'تعذر بدء التعرف على الإشارة. افتح الصفحة عبر HTTPS أو localhost وحاول مرة أخرى.' : 'Gesture recognition could not start. Serve this page over HTTPS or localhost and try again.';
+      showToast(activeLanguage === 'ar' ? 'تعذر تحميل نموذج الإشارة' : 'Could not load the gesture model');
     }finally{
       pill.classList.remove('show');
       detectBtn.disabled = !stream;
