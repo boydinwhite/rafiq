@@ -539,7 +539,7 @@
       const chip = document.createElement("div");
       chip.className = "phrase-chip";
       chip.textContent = phrase;
-      chip.onclick = () => setOutput(phrase);
+      chip.onclick = () => setOutput(phrase, language);
       phraseList.appendChild(chip);
     });
   }
@@ -562,6 +562,7 @@
   };
 
   let currentText = "";
+  let currentTextLanguage = "en";
   let currentLocationLabel = "Location not set.";
   let stream = null;
   let gestureRecognizer = null;
@@ -628,8 +629,9 @@
 
   translatePage();
 
-  function setOutput(text){
+  function setOutput(text, textLanguage = language){
     currentText = text;
+    currentTextLanguage = textLanguage;
     const box = document.getElementById('outputBox');
     box.textContent = text;
     box.classList.add('filled');
@@ -688,7 +690,7 @@
       const gesturePhrases = language === 'ar' ? GESTURE_PHRASES_AR : GESTURE_PHRASES_EN;
       const phrase = topGesture && gesturePhrases[topGesture.categoryName];
       if(phrase){
-        setOutput(phrase);
+        setOutput(phrase, language);
         showToast((language === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + topGesture.categoryName.replace('_', ' '));
       }else{
         currentText = "";
@@ -732,7 +734,7 @@
       showToast(language === 'ar' ? 'هذا المتصفح لا يدعم تحويل النص إلى كلام' : 'This browser does not support text-to-speech');
       return;
     }
-    const isArabic = language === 'ar';
+    const isArabic = currentTextLanguage === 'ar';
     const utter = new SpeechSynthesisUtterance(currentText);
     utter.lang = isArabic ? 'ar-SA' : 'en-US';
     const voices = await getSpeechVoices();
