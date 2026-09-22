@@ -418,7 +418,9 @@
         <button class="btn btn-ghost btn-sm" onclick="selectChatService('police')">👮 Police</button>
         <button class="btn btn-ghost btn-sm" onclick="selectChatService('civil')">🚒 Civil Defense</button>
       </div>
-      <div class="chat-log" id="chatLog" aria-live="polite"></div>
+      <div class="chat-log" id="chatLog" aria-live="polite">
+        <div class="chat-message system">Hello. This is a local demo chat with Ambulance. Your message will not reach a real service.</div>
+      </div>
       <form class="chat-form" onsubmit="sendChatMessage(event)">
         <input id="chatInput" type="text" autocomplete="off" placeholder="Type a message…" aria-label="Chat message">
         <button class="btn btn-brand" type="submit">Send</button>
