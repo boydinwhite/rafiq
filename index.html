@@ -584,6 +584,14 @@
     Victory: 'أحتاج إلى الشرطة',
     ILoveYou: 'أحتاج إلى مساعدة طبية'
   };
+  const GESTURE_NAMES_AR = {
+    Open_Palm: 'كف مفتوح',
+    Closed_Fist: 'قبضة مغلقة',
+    Thumb_Up: 'إبهام إلى الأعلى',
+    Thumb_Down: 'إبهام إلى الأسفل',
+    Victory: 'علامة النصر',
+    ILoveYou: 'إشارة أحبك'
+  };
 
   async function loadGestureRecognizer(){
     if(gestureRecognizer) return gestureRecognizer;
@@ -691,7 +699,10 @@
       const phrase = topGesture && gesturePhrases[topGesture.categoryName];
       if(phrase){
         setOutput(phrase, language);
-        showToast((language === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + topGesture.categoryName.replace('_', ' '));
+        const gestureName = language === 'ar'
+          ? (GESTURE_NAMES_AR[topGesture.categoryName] || topGesture.categoryName.replace('_', ' '))
+          : topGesture.categoryName.replace('_', ' ');
+        showToast((language === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + gestureName);
       }else{
         currentText = "";
         box.textContent = language === 'ar' ? 'لم يتم التعرف على إشارة مدعومة. ضع يدًا واحدة بوضوح أمام الكاميرا وحاول مرة أخرى.' : 'No supported gesture detected. Hold one hand clearly in view and try again.';
