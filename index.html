@@ -336,7 +336,7 @@
 
   <section id="translator">
     <h2>Sign Language Translator</h2>
-    <p class="section-lead">Turn on the camera and hold a clear hand gesture in view. The browser uses MediaPipe's on-device gesture model to recognize a small emergency vocabulary; use the ready-made phrases if the camera isn't available.</p>
+    <p class="section-lead">Turn on the camera and hold a clear hand gesture in view. The browser automatically recognizes a small emergency vocabulary after you hold a gesture briefly; use the button for a manual retry or choose a ready-made phrase.</p>
     <div class="translator">
       <div>
         <div class="cam-box" id="camBox">
@@ -567,6 +567,10 @@
   let stream = null;
   let gestureRecognizer = null;
   let recognizerLoading = null;
+  let detectionLoopId = null;
+  let lastAutoGesture = "";
+  let autoGestureFrames = 0;
+  let lastAutoTimestamp = -1;
 
   const GESTURE_PHRASES_EN = {
     Open_Palm: 'I need help',
@@ -656,6 +660,7 @@
     const detectBtn = document.getElementById('detectBtn');
 
     if(stream){
+      stopAutomaticDetection();
       stream.getTracks().forEach(t => t.stop());
       stream = null;
       video.style.display = 'none';
@@ -674,12 +679,62 @@
       btn.textContent = t('⏹️ Turn off camera');
       detectBtn.disabled = false;
       showToast(language === 'ar' ? 'تم تشغيل الكاميرا — النموذج جاهز للترجمة' : 'Camera turned on — gesture model ready when you translate');
+      startAutomaticDetection();
     }catch(err){
       if(stream){
         stream.getTracks().forEach(t => t.stop());
         stream = null;
       }
+
       showToast(language === 'ar' ? 'تعذر الوصول إلى الكاميرا أو نموذج الإشارة — تحقق من الأذونات والاتصال' : 'Could not access the camera or gesture model — check permissions and connection');
+    }
+  }
+
+  function stopAutomaticDetection(){
+    if(detectionLoopId !== null){
+      cancelAnimationFrame(detectionLoopId);
+      detectionLoopId = null;
+    }
+    lastAutoGesture = "";
+    autoGestureFrames = 0;
+    lastAutoTimestamp = -1;
+  }
+
+  async function startAutomaticDetection(){
+    stopAutomaticDetection();
+    const video = document.getElementById('camVideo');
+    try{
+      const recognizer = await loadGestureRecognizer();
+      if(!stream) return;
+
+      const detectFrame = () => {
+        if(!stream || video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA){
+          if(stream) detectionLoopId = requestAnimationFrame(detectFrame);
+          return;
+        }
+
+        const timestamp = performance.now();
+        if(timestamp - lastAutoTimestamp >= 100){
+          const result = recognizer.recognizeForVideo(video, timestamp);
+          const categoryName = result.gestures?.[0]?.[0]?.categoryName || "";
+          if(categoryName && categoryName === lastAutoGesture){
+            autoGestureFrames += 1;
+          }else{
+            lastAutoGesture = categoryName;
+            autoGestureFrames = categoryName ? 1 : 0;
+          }
+          lastAutoTimestamp = timestamp;
+
+          if(categoryName && autoGestureFrames === 4){
+            applyRecognizedGesture(categoryName, getActiveLanguage(), true);
+          }
+        }
+        detectionLoopId = requestAnimationFrame(detectFrame);
+      };
+
+      detectionLoopId = requestAnimationFrame(detectFrame);
+    }catch(error){
+      showToast(getActiveLanguage() === 'ar' ? 'تعذر تشغيل التعرف التلقائي' : 'Automatic recognition could not start');
     }
   }
 
@@ -700,14 +755,8 @@
       await new Promise(requestAnimationFrame);
       const result = recognizer.recognizeForVideo(video, performance.now());
       const topGesture = result.gestures?.[0]?.[0];
-      const gesturePhrases = activeLanguage === 'ar' ? GESTURE_PHRASES_AR : GESTURE_PHRASES_EN;
-      const phrase = topGesture && gesturePhrases[topGesture.categoryName];
-      if(phrase){
-        setOutput(phrase, activeLanguage);
-        const gestureName = activeLanguage === 'ar'
-          ? (GESTURE_NAMES_AR[topGesture.categoryName] || topGesture.categoryName.replace('_', ' '))
-          : topGesture.categoryName.replace('_', ' ');
-        showToast((activeLanguage === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + gestureName);
+      if(topGesture){
+        applyRecognizedGesture(topGesture.categoryName, activeLanguage, false);
       }else{
         currentText = "";
         box.textContent = activeLanguage === 'ar' ? 'لم يتم التعرف على إشارة مدعومة. ضع يدًا واحدة بوضوح أمام الكاميرا وحاول مرة أخرى.' : 'No supported gesture detected. Hold one hand clearly in view and try again.';
@@ -719,6 +768,20 @@
     }finally{
       pill.classList.remove('show');
       detectBtn.disabled = !stream;
+    }
+  }
+
+  function applyRecognizedGesture(categoryName, activeLanguage, automatic){
+    const gesturePhrases = activeLanguage === 'ar' ? GESTURE_PHRASES_AR : GESTURE_PHRASES_EN;
+    const phrase = gesturePhrases[categoryName];
+    if(!phrase) return;
+    const changedText = currentText !== phrase || currentTextLanguage !== activeLanguage;
+    setOutput(phrase, activeLanguage);
+    if(!automatic || changedText){
+      const gestureName = activeLanguage === 'ar'
+        ? (GESTURE_NAMES_AR[categoryName] || categoryName.replace('_', ' '))
+        : categoryName.replace('_', ' ');
+      showToast((activeLanguage === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + gestureName);
     }
   }
 
