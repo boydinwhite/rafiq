@@ -222,6 +222,26 @@
   .loc-status{ font-weight:700; }
   .loc-sub{ color:var(--ink-soft); font-size:0.9rem; }
 
+  .chat-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:22px; box-shadow:var(--shadow); max-width:680px;
+  }
+  .chat-toolbar{ display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .chat-log{
+    min-height:180px; max-height:300px; overflow:auto; background:var(--surface-2);
+    border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:10px;
+  }
+  .chat-message{ max-width:85%; padding:10px 13px; border-radius:14px; font-size:0.92rem; }
+  .chat-message.system{ align-self:flex-start; background:var(--surface); border:1px solid var(--line); }
+  .chat-message.user{ align-self:flex-end; background:var(--brand); color:#fff; }
+  .chat-form{ display:flex; gap:10px; margin-top:12px; }
+  .chat-form input{
+    flex:1; min-width:0; border:1px solid var(--line); border-radius:12px;
+    background:var(--surface); color:var(--ink); padding:11px 13px; font:inherit;
+  }
+  .chat-form input:focus{ outline:2px solid var(--brand); outline-offset:1px; }
+  @media (max-width:560px){ .chat-form{ flex-direction:column; } }
+
   .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:28px; }
   @media (max-width:760px){ .about-grid{ grid-template-columns:1fr; } }
   .about-grid ul{ margin:0; padding-inline-start:20px; color:var(--ink-soft); }
@@ -387,6 +407,23 @@
     </div>
   </section>
 
+  <section id="chat">
+    <h2>Emergency Chat</h2>
+    <p class="section-lead">Choose a service and send a message in this local demo chat. It does not contact police, ambulance, or civil defense.</p>
+    <div class="chat-card">
+      <div class="chat-toolbar" role="group" aria-label="Emergency service">
+        <button class="btn btn-ghost btn-sm" onclick="selectChatService('ambulance')">🚑 Ambulance</button>
+        <button class="btn btn-ghost btn-sm" onclick="selectChatService('police')">👮 Police</button>
+        <button class="btn btn-ghost btn-sm" onclick="selectChatService('civil')">🚒 Civil Defense</button>
+      </div>
+      <div class="chat-log" id="chatLog" aria-live="polite"></div>
+      <form class="chat-form" onsubmit="sendChatMessage(event)">
+        <input id="chatInput" type="text" autocomplete="off" placeholder="Type a message…" aria-label="Chat message">
+        <button class="btn btn-brand" type="submit">Send</button>
+      </form>
+    </div>
+  </section>
+
   <section id="location-section">
     <h2>Share Location</h2>
     <p class="section-lead">Your location is shared only after you allow it, and appears here before it's sent with any help request.</p>
@@ -480,6 +517,8 @@
     "Translated text": "النص المترجم", "Press \"Turn on camera\" then \"Try translation\", or pick a ready-made phrase.": "اضغط على «شغّل الكاميرا» ثم «جرّب الترجمة»، أو اختر عبارة جاهزة.",
     "🔊 Speak this text": "🔊 انطق هذا النص", "🚨 Use this in a help request": "🚨 استخدمه في طلب مساعدة", "Or pick a ready-made phrase": "أو اختر عبارة جاهزة",
     "Request Help": "طلب المساعدة", "Choose the service you need. The message and location that would be sent are shown for you to confirm before sending.": "اختر الخدمة التي تحتاجها. ستظهر الرسالة والموقع اللذان سيتم إرسالهما لتأكيدهما قبل الإرسال.",
+    "Emergency Chat": "محادثة الطوارئ", "Choose a service and send a message in this local demo chat. It does not contact police, ambulance, or civil defense.": "اختر خدمة وأرسل رسالة في محادثة تجريبية محلية. لن يتم التواصل مع الشرطة أو الإسعاف أو الدفاع المدني.",
+    "Emergency service": "خدمة الطوارئ", "Type a message…": "اكتب رسالة…", "Send": "إرسال",
     "Injury or urgent medical need": "إصابة أو حاجة طبية عاجلة", "Danger or security incidents": "خطر أو حادث أمني", "Fires and rescue situations": "حرائق وحالات إنقاذ",
     "Share Location": "مشاركة الموقع", "Your location is shared only after you allow it, and appears here before it's sent with any help request.": "لن تتم مشاركة موقعك إلا بعد السماح بذلك، وسيظهر هنا قبل إرساله مع أي طلب مساعدة.",
     "Your location hasn't been set yet.": "لم يتم تحديد موقعك بعد.", "Tap to detect your current location": "اضغط لاكتشاف موقعك الحالي", "📍 Detect my location": "📍 اكتشف موقعي",
@@ -542,6 +581,7 @@
       chip.onclick = () => setOutput(phrase, language);
       phraseList.appendChild(chip);
     });
+    updateChatLanguage();
   }
 
   function toggleLanguage(){
@@ -563,6 +603,7 @@
 
   let currentText = "";
   let currentTextLanguage = "en";
+  let chatService = "ambulance";
   let currentLocationLabel = "Location not set.";
   let stream = null;
   let gestureRecognizer = null;
@@ -639,8 +680,6 @@
     if(el) el.scrollIntoView({behavior:'smooth'});
   }
 
-  translatePage();
-
   function setOutput(text, textLanguage = language){
     currentText = text;
     currentTextLanguage = textLanguage;
@@ -648,6 +687,63 @@
     box.textContent = text;
     box.classList.add('filled');
   }
+
+  const CHAT_SERVICES = {
+    ambulance: { en: "Ambulance", ar: "الإسعاف" },
+    police: { en: "Police", ar: "الشرطة" },
+    civil: { en: "Civil Defense", ar: "الدفاع المدني" }
+  };
+
+  function addChatMessage(text, type){
+    const message = document.createElement('div');
+    message.className = 'chat-message ' + type;
+    message.textContent = text;
+    document.getElementById('chatLog').appendChild(message);
+    message.parentElement.scrollTop = message.parentElement.scrollHeight;
+  }
+
+  function updateChatLanguage(){
+    const input = document.getElementById('chatInput');
+    if(!input) return;
+    const isArabic = language === 'ar';
+    input.placeholder = isArabic ? 'اكتب رسالة…' : 'Type a message…';
+    input.setAttribute('aria-label', isArabic ? 'رسالة المحادثة' : 'Chat message');
+    const log = document.getElementById('chatLog');
+    if(log && !log.children.length){
+      addChatMessage(
+        isArabic
+          ? 'مرحبًا. هذه محادثة تجريبية محلية مع ' + CHAT_SERVICES[chatService].ar + '. لن تصل رسالتك إلى خدمة حقيقية.'
+          : 'Hello. This is a local demo chat with ' + CHAT_SERVICES[chatService].en + '. Your message will not reach a real service.',
+        'system'
+      );
+    }
+  }
+
+  function selectChatService(service){
+    chatService = service;
+    const log = document.getElementById('chatLog');
+    log.innerHTML = '';
+    updateChatLanguage();
+  }
+
+  function sendChatMessage(event){
+    event.preventDefault();
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if(!message) return;
+    addChatMessage(message, 'user');
+    input.value = '';
+    setTimeout(() => {
+      addChatMessage(
+        language === 'ar'
+          ? 'هذه رسالة تلقائية تجريبية. اتصل بخدمات الطوارئ المحلية في حالة الخطر.'
+          : 'This is an automated demo reply. Contact your local emergency services if you are in danger.',
+        'system'
+      );
+    }, 450);
+  }
+
+  translatePage();
 
   function getActiveLanguage(){
     return document.documentElement.lang === 'ar' ? 'ar' : 'en';
