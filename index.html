@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rafiq | Emergency Assistant for the Deaf and Hard of Hearing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F8F8;
+    --surface:#FFFFFF;
+    --surface-2:#EEF4F3;
+    --ink:#152321;
+    --ink-soft:#51625F;
+    --brand:#0E5C5C;
+    --brand-dark:#0A4141;
+    --brand-soft:#E1EFED;
+    --urgent:#E1552B;
+    --urgent-dark:#B93F1D;
+    --urgent-soft:#FCE7DF;
+    --line:#DCE6E3;
+    --success:#2F7A54;
+    --success-soft:#E3F3E9;
+    --shadow: 0 10px 30px rgba(14,92,92,0.10);
+    box-sizing:border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark){
+      --bg:#0E1615;
+      --surface:#152220;
+      --surface-2:#1B2A28;
+      --ink:#EAF2F0;
+      --ink-soft:#9FB4B0;
+      --brand:#3FA6A0;
+      --brand-dark:#2C8983;
+      --brand-soft:#1C3231;
+      --urgent:#F07A50;
+      --urgent-dark:#D65C33;
+      --urgent-soft:#3A2420;
+      --line:#25403C;
+      --success:#5FBE8C;
+      --success-soft:#193226;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0E1615;
+    --surface:#152220;
+    --surface-2:#1B2A28;
+    --ink:#EAF2F0;
+    --ink-soft:#9FB4B0;
+    --brand:#3FA6A0;
+    --brand-dark:#2C8983;
+    --brand-soft:#1C3231;
+    --urgent:#F07A50;
+    --urgent-dark:#D65C33;
+    --urgent-soft:#3A2420;
+    --line:#25403C;
+    --success:#5FBE8C;
+    --success-soft:#193226;
+    --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  html{ scroll-padding-top: calc(72px + env(safe-area-inset-top, 0px)); }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Manrope', 'Segoe UI', Tahoma, sans-serif;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{ max-width:100%; display:block; }
+  .wrap{ max-width:900px; margin:0 auto; padding:0 20px; }
+  a{ color:inherit; }
+
+  .demo-banner{
+    background:var(--urgent-soft);
+    color:var(--urgent-dark);
+    border-bottom:1px solid var(--urgent);
+    font-size:0.92rem;
+    padding:10px 16px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    text-align:center;
+    position:relative;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+  }
+  .demo-banner button{
+    background:none;border:none;color:inherit;font-size:1.1rem;
+    cursor:pointer; padding:0 4px; line-height:1;
+  }
+
+  header{
+    position:sticky; top:0; z-index:30;
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; max-width:900px; margin:0 auto; gap:12px;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.25rem; color:var(--brand-dark); }
+  .brand .mark{
+    width:36px; height:36px; border-radius:10px; background:var(--brand);
+    display:flex; align-items:center; justify-content:center; font-size:1.15rem;
+  }
+  .navlinks{ display:flex; gap:22px; font-weight:500; color:var(--ink-soft); }
+  .navlinks a{ text-decoration:none; }
+  .navlinks a:hover{ color:var(--brand-dark); }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; justify-content:center;
+    border-radius:12px; padding:12px 20px; font-weight:700; font-size:0.98rem;
+    border:none; cursor:pointer; text-decoration:none; transition:transform .12s ease, filter .12s ease;
+  }
+  .btn:active{ transform:scale(0.97); }
+  .btn-brand{ background:var(--brand); color:#fff; }
+  .btn-brand:hover{ filter:brightness(1.08); }
+  .btn-urgent{ background:var(--urgent); color:#fff; }
+  .btn-urgent:hover{ filter:brightness(1.08); }
+  .btn-ghost{ background:var(--surface-2); color:var(--ink); }
+  .btn-ghost:hover{ filter:brightness(0.97); }
+  .btn-outline{ background:transparent; color:var(--brand-dark); border:1.5px solid var(--brand); }
+  .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+  .btn-sm{ padding:9px 14px; font-size:0.88rem; border-radius:10px; }
+
+  .hero{ padding:64px 0 40px; }
+  .hero .eyebrow{ color:var(--brand-dark); font-weight:700; margin:0 0 10px; }
+  .hero h1{
+    font-size:clamp(2.1rem, 5vw, 3.2rem); font-weight:800; margin:0 0 18px; color:var(--ink);
+    max-width:16ch;
+  }
+  .hero p.lead{ color:var(--ink-soft); font-size:1.12rem; max-width:52ch; margin:0 0 30px; }
+  .hero .actions{ display:flex; flex-wrap:wrap; gap:14px; margin-bottom:38px; }
+  .quickrow{ display:flex; flex-wrap:wrap; gap:12px; }
+  .quickchip{
+    display:flex; align-items:center; gap:8px; background:var(--surface);
+    border:1px solid var(--line); border-radius:999px; padding:10px 18px;
+    font-weight:700; font-size:0.92rem; color:var(--ink);
+  }
+
+  section{ padding:52px 0; border-top:1px solid var(--line); }
+  h2{ font-size:1.7rem; font-weight:800; margin:0 0 8px; }
+  .section-lead{ color:var(--ink-soft); margin:0 0 32px; max-width:60ch; }
+
+  .grid3{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; }
+  @media (max-width:760px){ .grid3{ grid-template-columns:1fr; } }
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:22px; box-shadow:var(--shadow);
+  }
+  .card .icon{ font-size:1.6rem; margin-bottom:10px; }
+  .card h3{ margin:0 0 8px; font-size:1.05rem; }
+  .card p{ margin:0; color:var(--ink-soft); font-size:0.95rem; }
+
+  .translator{
+    background:var(--surface); border:1px solid var(--line); border-radius:20px;
+    padding:26px; box-shadow:var(--shadow);
+    display:grid; grid-template-columns:1.1fr 1fr; gap:24px;
+  }
+  @media (max-width:760px){ .translator{ grid-template-columns:1fr; } }
+  .cam-box{
+    position:relative; background:var(--brand-dark); border-radius:16px; overflow:hidden;
+    aspect-ratio:4/3; display:flex; align-items:center; justify-content:center;
+  }
+  .cam-box video{ width:100%; height:100%; object-fit:cover; transform:scaleX(-1); }
+  .cam-placeholder{ color:#fff; text-align:center; padding:20px; opacity:0.85; }
+  .cam-placeholder .big{ font-size:2.4rem; margin-bottom:8px; }
+  .detect-pill{
+    position:absolute; top:12px; inset-inline-start:12px;
+    background:rgba(0,0,0,0.55); color:#fff; padding:6px 12px; border-radius:999px;
+    font-size:0.8rem; font-weight:700; display:none; align-items:center; gap:6px;
+  }
+  .detect-pill.show{ display:flex; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#F07A50; animation:pulse 1s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  .cam-controls{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+
+  .output-label{ font-weight:700; color:var(--ink-soft); font-size:0.9rem; margin-bottom:8px; }
+  .output-box{
+    min-height:110px; background:var(--surface-2); border-radius:14px; padding:18px;
+    font-size:1.15rem; font-weight:500; display:flex; align-items:center;
+    border:1px dashed var(--line);
+  }
+  .output-box.filled{ border-style:solid; border-color:var(--brand); background:var(--brand-soft); }
+  .output-actions{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+
+  .phrases-label{ font-weight:700; color:var(--ink-soft); font-size:0.9rem; margin:20px 0 10px; }
+  .phrase-chip{
+    background:var(--surface); border:1px solid var(--line); border-radius:12px;
+    padding:9px 14px; font-size:0.88rem; cursor:pointer; text-align:left;
+  }
+  .phrase-chip:hover{ border-color:var(--brand); color:var(--brand-dark); }
+  .phraselist{ display:flex; flex-direction:column; gap:8px; }
+
+  .emg-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media (max-width:760px){ .emg-grid{ grid-template-columns:1fr; } }
+  .emg-card{
+    background:var(--surface); border:2px solid var(--line); border-radius:18px;
+    padding:26px 18px; text-align:center; cursor:pointer; transition:border-color .15s ease, transform .12s ease;
+  }
+  .emg-card:hover{ border-color:var(--urgent); transform:translateY(-2px); }
+  .emg-card .emoji{ font-size:2.4rem; margin-bottom:10px; }
+  .emg-card h3{ margin:0 0 4px; font-size:1.05rem; }
+  .emg-card p{ margin:0; color:var(--ink-soft); font-size:0.85rem; }
+
+  .loc-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:18px;
+    padding:24px; box-shadow:var(--shadow);
+    display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;
+  }
+  .loc-info{ display:flex; align-items:center; gap:14px; }
+  .loc-info .emoji{ font-size:1.8rem; }
+  .loc-status{ font-weight:700; }
+  .loc-sub{ color:var(--ink-soft); font-size:0.9rem; }
+
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:28px; }
+  @media (max-width:760px){ .about-grid{ grid-template-columns:1fr; } }
+  .about-grid ul{ margin:0; padding-inline-start:20px; color:var(--ink-soft); }
+  .about-grid li{ margin-bottom:8px; }
+  .about-grid h3{ margin:0 0 12px; font-size:1.1rem; }
+
+  footer{ padding:30px 0 calc(30px + env(safe-area-inset-bottom, 0px)); color:var(--ink-soft); font-size:0.85rem; text-align:center; border-top:1px solid var(--line); }
+
+  .sos-fab{
+    position:fixed; bottom:calc(22px + env(safe-area-inset-bottom, 0px)); inset-inline-end:22px; z-index:40;
+    background:var(--urgent); color:#fff; border:none; border-radius:999px;
+    padding:16px 22px; font-weight:800; font-size:0.98rem; box-shadow:0 8px 24px rgba(225,85,43,0.4);
+    display:flex; align-items:center; gap:8px; cursor:pointer;
+  }
+  .sos-fab:active{ transform:scale(0.96); }
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(10,20,18,0.55); z-index:50;
+    display:none; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-backdrop.show{ display:flex; }
+  .modal{
+    background:var(--surface); border-radius:20px; padding:28px; max-width:440px; width:100%;
+    box-shadow:0 24px 60px rgba(0,0,0,0.3);
+  }
+  .modal h3{ margin:0 0 6px; font-size:1.3rem; display:flex; align-items:center; gap:10px; }
+  .modal .modal-sub{ color:var(--ink-soft); margin:0 0 20px; font-size:0.92rem; }
+  .modal-field{ margin-bottom:14px; }
+  .modal-field .flabel{ font-size:0.82rem; font-weight:700; color:var(--ink-soft); margin-bottom:4px; }
+  .modal-field .fval{ background:var(--surface-2); border-radius:10px; padding:10px 14px; font-size:0.95rem; }
+  .modal-actions{ display:flex; gap:10px; margin-top:18px; }
+  .modal-success{
+    background:var(--success-soft); color:var(--success); border-radius:12px; padding:14px;
+    font-weight:700; text-align:center; display:none; gap:8px; align-items:center; justify-content:center;
+  }
+  .modal-success.show{ display:flex; }
+
+  .toast{
+    position:fixed; bottom:calc(90px + env(safe-area-inset-bottom, 0px)); left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--bg); padding:12px 20px; border-radius:12px; font-size:0.9rem;
+    opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; z-index:60;
+    max-width:90vw; text-align:center;
+  }
+  .toast.show{ opacity:1; }
+
+  @media (max-width: 640px){
+    .navlinks{ display:none; }
+    .nav .btn-brand span.label{ display:none; }
+  }
+    .lang-toggle{ margin-inline-start:8px; min-width:72px; }
+</style>
+</head>
+<body>
+
+<div class="demo-banner" id="demoBanner">
+  <span>⚠️ This is a demo prototype for illustration only — it is not connected to real emergency services. Do not rely on it in an actual emergency.</span>
+  <button aria-label="Close" onclick="dismissBanner()">✕</button>
+</div>
+
+<header>
+  <div class="nav">
+    <div class="brand"><span class="mark">🤟</span> Rafiq</div>
+    <nav class="navlinks">
+      <a href="#home">Home</a>
+      <a href="#translator">Sign Translator</a>
+      <a href="#emergency">Emergency</a>
+      <a href="#about">About</a>
+    </nav>
+    <button class="btn btn-ghost btn-sm lang-toggle" id="languageBtn" onclick="toggleLanguage()">العربية</button>
+    <button class="btn btn-urgent btn-sm" onclick="scrollToId('emergency')">🚨 <span class="label">Get Help</span></button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="hero" id="home">
+    <p class="eyebrow">Easier communication in emergencies</p>
+    <h1>Rafiq turns your signing into speech, right when it matters</h1>
+    <p class="lead">A site that helps Deaf and hard-of-hearing people reach emergency services — translating sign language into text and speech, and sharing your location with your permission.</p>
+    <div class="actions">
+      <button class="btn btn-brand" onclick="scrollToId('translator')">🤟 Try sign translation</button>
+      <button class="btn btn-urgent" onclick="scrollToId('emergency')">🚨 Get help now</button>
+    </div>
+    <div class="quickrow">
+      <span class="quickchip">🚑 Ambulance</span>
+      <span class="quickchip">👮 Police</span>
+      <span class="quickchip">🚒 Fire / Civil Defense</span>
+    </div>
+  </section>
+
+  <section>
+    <h2>Why Rafiq?</h2>
+    <p class="section-lead">A real problem many Deaf and hard-of-hearing people face when they need urgent help.</p>
+    <div class="grid3">
+      <div class="card">
+        <div class="icon">🧏</div>
+        <h3>Communication barrier</h3>
+        <p>Deaf and hard-of-hearing people can struggle with voice-based communication in emergencies, especially over phone calls.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🚨</div>
+        <h3>Response speed</h3>
+        <p>Emergencies need essential information delivered quickly and clearly, without misunderstanding or delay.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🤖</div>
+        <h3>Assistive technology</h3>
+        <p>AI and computer vision can support recognizing sign language and converting it into text and speech.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="translator">
+    <h2>Sign Language Translator</h2>
+    <p class="section-lead">Turn on the camera and hold a clear hand gesture in view. The browser uses MediaPipe's on-device gesture model to recognize a small emergency vocabulary; use the ready-made phrases if the camera isn't available.</p>
+    <div class="translator">
+      <div>
+        <div class="cam-box" id="camBox">
+          <div class="cam-placeholder" id="camPlaceholder">
+            <div class="big">📷</div>
+            <div>Use the camera to try the translation</div>
+          </div>
+          <video id="camVideo" autoplay playsinline muted style="display:none;"></video>
+          <div class="detect-pill" id="detectPill"><span class="dot"></span> Trying to recognize the sign…</div>
+        </div>
+        <div class="cam-controls">
+          <button class="btn btn-brand" id="camToggleBtn" onclick="toggleCamera()">📷 Turn on camera</button>
+          <button class="btn btn-ghost" id="detectBtn" onclick="runDetection()" disabled>🤖 Try translation</button>
+        </div>
+      </div>
+      <div>
+        <div class="output-label">Translated text</div>
+        <div class="output-box" id="outputBox">Press "Turn on camera" then "Try translation", or pick a ready-made phrase.</div>
+        <div class="output-actions">
+          <button class="btn btn-outline btn-sm" onclick="speakOutput()">🔊 Speak this text</button>
+          <button class="btn btn-urgent btn-sm" onclick="openEmergencyModalWithText()">🚨 Use this in a help request</button>
+        </div>
+        <div class="phrases-label">Or pick a ready-made phrase</div>
+        <div class="phraselist" id="phraseList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="emergency">
+    <h2>Request Help</h2>
+    <p class="section-lead">Choose the service you need. The message and location that would be sent are shown for you to confirm before sending.</p>
+    <div class="emg-grid">
+      <div class="emg-card" onclick="openEmergencyModal('ambulance')">
+        <div class="emoji">🚑</div>
+        <h3>Ambulance</h3>
+        <p>Injury or urgent medical need</p>
+      </div>
+      <div class="emg-card" onclick="openEmergencyModal('police')">
+        <div class="emoji">👮</div>
+        <h3>Police</h3>
+        <p>Danger or security incidents</p>
+      </div>
+      <div class="emg-card" onclick="openEmergencyModal('civil')">
+        <div class="emoji">🚒</div>
+        <h3>Civil Defense</h3>
+        <p>Fires and rescue situations</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="location-section">
+    <h2>Share Location</h2>
+    <p class="section-lead">Your location is shared only after you allow it, and appears here before it's sent with any help request.</p>
+    <div class="loc-card">
+      <div class="loc-info">
+        <div class="emoji">📍</div>
+        <div>
+          <div class="loc-status" id="locStatus">Your location hasn't been set yet.</div>
+          <div class="loc-sub" id="locSub">Tap to detect your current location</div>
+        </div>
+      </div>
+      <button class="btn btn-brand" onclick="getLocation()">📍 Detect my location</button>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2>About Rafiq</h2>
+    <p class="section-lead">Assistive technology for the Deaf and hard-of-hearing.</p>
+    <div class="about-grid">
+      <div>
+        <h3>Project goal</h3>
+        <p style="color:var(--ink-soft)">Designing a digital tool that makes it easier for Deaf and hard-of-hearing people to request emergency services, by translating sign language into text or speech and sending essential information and location once the user agrees.</p>
+        <h3>Potential uses</h3>
+        <ul>
+          <li>Requesting help in urgent situations.</li>
+          <li>Making communication easier between the user and an emergency operator.</li>
+          <li>Sending written details about the situation and location once confirmed by the user.</li>
+          <li>Use by organizations that serve Deaf and hard-of-hearing people.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Future work</h3>
+        <ul>
+          <li>Train an actual sign-recognition model (the next phase).</li>
+          <li>Recognize connected sentences instead of single signs.</li>
+          <li>Diversify training data and improve performance across lighting and backgrounds.</li>
+          <li>Support regional sign language variations.</li>
+          <li>Turn the operator's reply into text or a visual interface.</li>
+          <li>Run field tests with users from the target group.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Rafiq — a demo prototype, not connected to real emergency services.
+</footer>
+
+<button class="sos-fab" onclick="scrollToId('emergency')">🚨 Emergency</button>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <h3 id="modalIcon">🚑 Ambulance</h3>
+    <p class="modal-sub">Review the details before sending. This is a demo and won't reach a real service.</p>
+    <div class="modal-field">
+      <div class="flabel">Message</div>
+      <div class="fval" id="modalMessage">No message set yet.</div>
+    </div>
+    <div class="modal-field">
+      <div class="flabel">Location</div>
+      <div class="fval" id="modalLocation">Location not set.</div>
+    </div>
+    <div class="modal-success" id="modalSuccess">✅ Request sent (demo) — no real service was contacted</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">Close</button>
+      <button class="btn btn-urgent" style="flex:1" id="modalSendBtn" onclick="mockSend()">Send request</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const TRANSLATIONS = {
+    "⚠️ This is a demo prototype for illustration only — it is not connected to real emergency services. Do not rely on it in an actual emergency.": "⚠️ هذا نموذج تجريبي للتوضيح فقط — غير متصل بخدمات الطوارئ الحقيقية. لا تعتمد عليه في حالة طوارئ فعلية.",
+    "Home": "الرئيسية", "Sign Translator": "مترجم لغة الإشارة", "Emergency": "الطوارئ", "About": "عن رفيق",
+    "🚨 Get Help": "🚨 اطلب المساعدة", "Easier communication in emergencies": "تواصل أسهل في حالات الطوارئ",
+    "Rafiq turns your signing into speech, right when it matters": "رفيق يحوّل إشاراتك إلى كلام عندما تكون الحاجة ملحّة",
+    "A site that helps Deaf and hard-of-hearing people reach emergency services — translating sign language into text and speech, and sharing your location with your permission.": "موقع يساعد الصم وضعاف السمع على الوصول إلى خدمات الطوارئ — يترجم لغة الإشارة إلى نص وكلام، ويشارك موقعك بعد موافقتك.",
+    "🤟 Try sign translation": "🤟 جرّب ترجمة الإشارة", "🚨 Get help now": "🚨 اطلب المساعدة الآن",
+    "🚑 Ambulance": "🚑 الإسعاف", "👮 Police": "👮 الشرطة", "🚒 Fire / Civil Defense": "🚒 الإطفاء / الدفاع المدني",
+    "Why Rafiq?": "لماذا رفيق؟", "A real problem many Deaf and hard-of-hearing people face when they need urgent help.": "مشكلة حقيقية يواجهها كثير من الصم وضعاف السمع عند حاجتهم إلى مساعدة عاجلة.",
+    "Communication barrier": "حاجز التواصل", "Deaf and hard-of-hearing people can struggle with voice-based communication in emergencies, especially over phone calls.": "قد يواجه الصم وضعاف السمع صعوبة في التواصل الصوتي أثناء الطوارئ، خاصة عبر الهاتف.",
+    "Response speed": "سرعة الاستجابة", "Emergencies need essential information delivered quickly and clearly, without misunderstanding or delay.": "تحتاج حالات الطوارئ إلى نقل المعلومات الأساسية بسرعة ووضوح، دون سوء فهم أو تأخير.",
+    "Assistive technology": "التقنية المساعدة", "AI and computer vision can support recognizing sign language and converting it into text and speech.": "يمكن للذكاء الاصطناعي والرؤية الحاسوبية المساعدة في التعرف على لغة الإشارة وتحويلها إلى نص وكلام.",
+    "Sign Language Translator": "مترجم لغة الإشارة", "Turn on the camera and hold a clear hand gesture in view. The browser uses MediaPipe's on-device gesture model to recognize a small emergency vocabulary; use the ready-made phrases if the camera isn't available.": "شغّل الكاميرا وثبّت إشارة يد واضحة أمامها. يستخدم المتصفح نموذج MediaPipe على الجهاز للتعرف على مجموعة صغيرة من إشارات الطوارئ؛ استخدم العبارات الجاهزة إذا لم تتوفر الكاميرا.",
+    "Use the camera to try the translation": "استخدم الكاميرا لتجربة الترجمة", "Trying to recognize the sign…": "جارٍ محاولة التعرف على الإشارة…",
+    "📷 Turn on camera": "📷 شغّل الكاميرا", "⏹️ Turn off camera": "⏹️ أوقف الكاميرا", "🤖 Try translation": "🤖 جرّب الترجمة",
+    "Translated text": "النص المترجم", "Press \"Turn on camera\" then \"Try translation\", or pick a ready-made phrase.": "اضغط على «شغّل الكاميرا» ثم «جرّب الترجمة»، أو اختر عبارة جاهزة.",
+    "🔊 Speak this text": "🔊 انطق هذا النص", "🚨 Use this in a help request": "🚨 استخدمه في طلب مساعدة", "Or pick a ready-made phrase": "أو اختر عبارة جاهزة",
+    "Request Help": "طلب المساعدة", "Choose the service you need. The message and location that would be sent are shown for you to confirm before sending.": "اختر الخدمة التي تحتاجها. ستظهر الرسالة والموقع اللذان سيتم إرسالهما لتأكيدهما قبل الإرسال.",
+    "Injury or urgent medical need": "إصابة أو حاجة طبية عاجلة", "Danger or security incidents": "خطر أو حادث أمني", "Fires and rescue situations": "حرائق وحالات إنقاذ",
+    "Share Location": "مشاركة الموقع", "Your location is shared only after you allow it, and appears here before it's sent with any help request.": "لن تتم مشاركة موقعك إلا بعد السماح بذلك، وسيظهر هنا قبل إرساله مع أي طلب مساعدة.",
+    "Your location hasn't been set yet.": "لم يتم تحديد موقعك بعد.", "Tap to detect your current location": "اضغط لاكتشاف موقعك الحالي", "📍 Detect my location": "📍 اكتشف موقعي",
+    "About Rafiq": "عن رفيق", "Assistive technology for the Deaf and hard-of-hearing.": "تقنية مساعدة للصم وضعاف السمع.", "Project goal": "هدف المشروع",
+    "Potential uses": "الاستخدامات المحتملة", "Future work": "العمل المستقبلي", "Close": "إغلاق", "Send request": "إرسال الطلب",
+    "Designing a digital tool that makes it easier for Deaf and hard-of-hearing people to request emergency services, by translating sign language into text or speech and sending essential information and location once the user agrees.": "تصميم أداة رقمية تسهّل على الصم وضعاف السمع طلب خدمات الطوارئ، من خلال ترجمة لغة الإشارة إلى نص أو كلام وإرسال المعلومات الأساسية والموقع بعد موافقة المستخدم.",
+    "Requesting help in urgent situations.": "طلب المساعدة في الحالات العاجلة.", "Making communication easier between the user and an emergency operator.": "تسهيل التواصل بين المستخدم وموظف الطوارئ.",
+    "Sending written details about the situation and location once confirmed by the user.": "إرسال تفاصيل مكتوبة عن الحالة والموقع بعد تأكيد المستخدم.", "Use by organizations that serve Deaf and hard-of-hearing people.": "استخدامها من قبل المؤسسات التي تخدم الصم وضعاف السمع.",
+    "Train an actual sign-recognition model (the next phase).": "تدريب نموذج فعلي للتعرف على الإشارات (المرحلة القادمة).", "Recognize connected sentences instead of single signs.": "التعرف على جمل مترابطة بدلًا من إشارات منفردة.",
+    "Diversify training data and improve performance across lighting and backgrounds.": "تنويع بيانات التدريب وتحسين الأداء في ظروف الإضاءة والخلفيات المختلفة.",
+    "Support regional sign language variations.": "دعم اختلافات لغة الإشارة الإقليمية.", "Turn the operator's reply into text or a visual interface.": "تحويل رد الموظف إلى نص أو واجهة مرئية.", "Run field tests with users from the target group.": "إجراء اختبارات ميدانية مع أفراد من الفئة المستهدفة.",
+    "Message": "الرسالة", "Location": "الموقع", "No message set yet.": "لم يتم تحديد رسالة بعد.", "Location not set.": "لم يتم تحديد الموقع.",
+    "Review the details before sending. This is a demo and won't reach a real service.": "راجع التفاصيل قبل الإرسال. هذا نموذج تجريبي ولن يصل إلى خدمة حقيقية.",
+    "✅ Request sent (demo) — no real service was contacted": "✅ تم إرسال الطلب (تجريبي) — لم يتم التواصل مع أي خدمة حقيقية",
+    "🚨 Emergency": "🚨 طوارئ", "Rafiq — a demo prototype, not connected to real emergency services.": "رفيق — نموذج تجريبي غير متصل بخدمات الطوارئ الحقيقية."
+  };
+
+  const EN_PHRASES = [
+    "I need an ambulance now",
+    "I'm in severe pain and can't move",
+    "I was in a car accident, I need help",
+    "There's a fire here, I need civil defense",
+    "I'm in danger, I need police now",
+    "I need urgent help at my current location"
+  ];
+  const AR_PHRASES = [
+    "أحتاج إلى سيارة إسعاف الآن", "أشعر بألم شديد ولا أستطيع الحركة", "تعرضت لحادث سيارة وأحتاج إلى المساعدة",
+    "هناك حريق هنا، أحتاج إلى الدفاع المدني", "أنا في خطر، أحتاج إلى الشرطة الآن", "أحتاج إلى مساعدة عاجلة في موقعي الحالي"
+  ];
+  let language = "en";
+  let PHRASES = EN_PHRASES;
+  const AR_TO_EN = Object.fromEntries(Object.entries(TRANSLATIONS).map(([en, ar]) => [ar, en]));
+
+  function t(text){
+    return language === "ar" ? (TRANSLATIONS[text] || text) : (AR_TO_EN[text] || text);
+  }
+
+  function translatePage(){
+    document.documentElement.lang = language;
+    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+    document.getElementById("languageBtn").textContent = language === "ar" ? "English" : "العربية";
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      const trimmed = node.nodeValue.trim();
+      if(!trimmed || node.parentElement.closest("script,style")) return;
+      const translated = t(trimmed);
+      if(translated !== trimmed){
+        node.nodeValue = node.nodeValue.replace(trimmed, translated);
+      }
+    });
+    PHRASES = language === "ar" ? AR_PHRASES : EN_PHRASES;
+    const phraseList = document.getElementById("phraseList");
+    phraseList.innerHTML = "";
+    PHRASES.forEach(phrase => {
+      const chip = document.createElement("div");
+      chip.className = "phrase-chip";
+      chip.textContent = phrase;
+      chip.onclick = () => setOutput(phrase);
+      phraseList.appendChild(chip);
+    });
+  }
+
+  function toggleLanguage(){
+    language = language === "en" ? "ar" : "en";
+    try{ localStorage.setItem("rafiq_language", language); }catch(e){}
+    translatePage();
+  }
+
+  try{
+    const savedLanguage = localStorage.getItem("rafiq_language");
+    if(savedLanguage === "ar") language = "ar";
+  }catch(e){}
+
+  const EMG_INFO = {
+    ambulance: { title: "🚑 Ambulance", key: "ambulance" },
+    police: { title: "👮 Police", key: "police" },
+    civil: { title: "🚒 Civil Defense", key: "civil" }
+  };
+
+  let currentText = "";
+  let currentLocationLabel = "Location not set.";
+  let stream = null;
+  let gestureRecognizer = null;
+  let recognizerLoading = null;
+
+  const GESTURE_PHRASES_EN = {
+    Open_Palm: 'I need help',
+    Closed_Fist: 'Stop — I need assistance',
+    Thumb_Up: 'Yes, I am safe',
+    Thumb_Down: 'No, I am not safe',
+    Victory: 'I need the police',
+    ILoveYou: 'I need medical help'
+  };
+  const GESTURE_PHRASES_AR = {
+    Open_Palm: 'أحتاج إلى المساعدة',
+    Closed_Fist: 'توقف — أحتاج إلى المساعدة',
+    Thumb_Up: 'نعم، أنا بأمان',
+    Thumb_Down: 'لا، لست بأمان',
+    Victory: 'أحتاج إلى الشرطة',
+    ILoveYou: 'أحتاج إلى مساعدة طبية'
+  };
+
+  async function loadGestureRecognizer(){
+    if(gestureRecognizer) return gestureRecognizer;
+    if(recognizerLoading) return recognizerLoading;
+
+    recognizerLoading = import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs')
+      .then(async ({ FilesetResolver, GestureRecognizer }) => {
+        const vision = await FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm'
+        );
+        gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: 'https://storage.googleapis.com/mediapipe-tasks/gesture_recognizer/gesture_recognizer.task',
+            delegate: 'GPU'
+          },
+          runningMode: 'VIDEO',
+          numHands: 2
+        });
+        return gestureRecognizer;
+      })
+      .catch(error => {
+        recognizerLoading = null;
+        throw error;
+      });
+
+    return recognizerLoading;
+  }
+
+  function dismissBanner(){
+    document.getElementById('demoBanner').style.display = 'none';
+    try{ localStorage.setItem('rafiq_banner_dismissed','1'); }catch(e){}
+  }
+  try{
+    if(localStorage.getItem('rafiq_banner_dismissed') === '1'){
+      document.getElementById('demoBanner').style.display = 'none';
+    }
+  }catch(e){}
+
+  function scrollToId(id){
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth'});
+  }
+
+  translatePage();
+
+  function setOutput(text){
+    currentText = text;
+    const box = document.getElementById('outputBox');
+    box.textContent = text;
+    box.classList.add('filled');
+  }
+
+  async function toggleCamera(){
+    const video = document.getElementById('camVideo');
+    const placeholder = document.getElementById('camPlaceholder');
+    const btn = document.getElementById('camToggleBtn');
+    const detectBtn = document.getElementById('detectBtn');
+
+    if(stream){
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+      video.style.display = 'none';
+      placeholder.style.display = 'flex';
+      btn.textContent = t('📷 Turn on camera');
+      detectBtn.disabled = true;
+      return;
+    }
+
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({ video: true, audio:false });
+      video.srcObject = stream;
+      await video.play();
+      video.style.display = 'block';
+      placeholder.style.display = 'none';
+      btn.textContent = t('⏹️ Turn off camera');
+      detectBtn.disabled = false;
+      showToast(language === 'ar' ? 'تم تشغيل الكاميرا — النموذج جاهز للترجمة' : 'Camera turned on — gesture model ready when you translate');
+    }catch(err){
+      if(stream){
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+      }
+      showToast(language === 'ar' ? 'تعذر الوصول إلى الكاميرا أو نموذج الإشارة — تحقق من الأذونات والاتصال' : 'Could not access the camera or gesture model — check permissions and connection');
+    }
+  }
+
+  async function runDetection(){
+    const pill = document.getElementById('detectPill');
+    const box = document.getElementById('outputBox');
+    const detectBtn = document.getElementById('detectBtn');
+    pill.classList.add('show');
+    detectBtn.disabled = true;
+    box.textContent = language === 'ar' ? 'جارٍ تحليل إشارة يدك…' : 'Analyzing your hand gesture…';
+    try{
+      const recognizer = await loadGestureRecognizer();
+      const video = document.getElementById('camVideo');
+      if(video.readyState < HTMLMediaElement.HAVE_CURRENT_DATA){
+        await new Promise(resolve => video.addEventListener('loadeddata', resolve, {once:true}));
+      }
+      await new Promise(requestAnimationFrame);
+      const result = recognizer.recognizeForVideo(video, performance.now());
+      const topGesture = result.gestures?.[0]?.[0];
+      const gesturePhrases = language === 'ar' ? GESTURE_PHRASES_AR : GESTURE_PHRASES_EN;
+      const phrase = topGesture && gesturePhrases[topGesture.categoryName];
+      if(phrase){
+        setOutput(phrase);
+        showToast((language === 'ar' ? 'تم التعرف على الإشارة: ' : 'Gesture recognized: ') + topGesture.categoryName.replace('_', ' '));
+      }else{
+        currentText = "";
+        box.textContent = language === 'ar' ? 'لم يتم التعرف على إشارة مدعومة. ضع يدًا واحدة بوضوح أمام الكاميرا وحاول مرة أخرى.' : 'No supported gesture detected. Hold one hand clearly in view and try again.';
+        box.classList.remove('filled');
+      }
+    }catch(error){
+      box.textContent = language === 'ar' ? 'تعذر بدء التعرف على الإشارة. افتح الصفحة عبر HTTPS أو localhost وحاول مرة أخرى.' : 'Gesture recognition could not start. Serve this page over HTTPS or localhost and try again.';
+      showToast(language === 'ar' ? 'تعذر تحميل نموذج الإشارة' : 'Could not load the gesture model');
+    }finally{
+      pill.classList.remove('show');
+      detectBtn.disabled = !stream;
+    }
+  }
+
+  function speakOutput(){
+    if(!currentText){
+      showToast(language === 'ar' ? 'لا يوجد نص لنطقه بعد' : 'No text to speak yet');
+      return;
+    }
+    if(!('speechSynthesis' in window)){
+      showToast(language === 'ar' ? 'هذا المتصفح لا يدعم تحويل النص إلى كلام' : 'This browser does not support text-to-speech');
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(currentText);
+    utter.lang = language === 'ar' ? 'ar-SA' : 'en-US';
+    const voices = speechSynthesis.getVoices();
+    const enVoice = voices.find(v => v.lang && v.lang.startsWith('en'));
+    if(enVoice) utter.voice = enVoice;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utter);
+  }
+
+  function getLocation(){
+    const statusEl = document.getElementById('locStatus');
+    const subEl = document.getElementById('locSub');
+    if(!navigator.geolocation){
+      statusEl.textContent = language === 'ar' ? 'هذا المتصفح لا يدعم تحديد الموقع.' : 'This browser does not support location.';
+      return;
+    }
+    statusEl.textContent = language === 'ar' ? 'جارٍ تحديد الموقع…' : 'Detecting location…';
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude.toFixed(4);
+        const lng = pos.coords.longitude.toFixed(4);
+        currentLocationLabel = lat + ', ' + lng;
+        statusEl.innerHTML = (language === 'ar' ? 'تم تحديد الموقع: ' : 'Location set: ') + currentLocationLabel;
+        subEl.innerHTML = '<a href="https://www.google.com/maps?q=' + lat + ',' + lng + '" target="_blank" rel="noopener">' + (language === 'ar' ? 'افتح في خرائط Google ↗' : 'Open in Google Maps ↗') + '</a>';
+      },
+      err => {
+        statusEl.textContent = language === 'ar' ? 'تعذر تحديد الموقع — تحقق من الأذونات.' : 'Could not detect location — check permissions.';
+        subEl.textContent = '';
+      }
+    );
+  }
+
+  function openEmergencyModalWithText(){
+    if(!currentText){
+      showToast('Pick or translate a phrase first');
+      return;
+    }
+    openEmergencyModal('ambulance');
+  }
+
+  function openEmergencyModal(type){
+    const info = EMG_INFO[type];
+    const titles = { ambulance: ['🚑 Ambulance', '🚑 الإسعاف'], police: ['👮 Police', '👮 الشرطة'], civil: ['🚒 Civil Defense', '🚒 الدفاع المدني'] };
+    document.getElementById('modalIcon').textContent = titles[type][language === 'ar' ? 1 : 0];
+    document.getElementById('modalMessage').textContent = currentText || (language === 'ar' ? 'لم يتم تحديد رسالة — سيتم إرسال نوع الطلب فقط.' : 'No message set — only the request type will be sent.');
+    document.getElementById('modalLocation').textContent = currentLocationLabel;
+    document.getElementById('modalSuccess').classList.remove('show');
+    document.getElementById('modalSendBtn').style.display = 'block';
+    document.getElementById('modalBackdrop').classList.add('show');
+  }
+
+  function closeModal(){
+    document.getElementById('modalBackdrop').classList.remove('show');
+  }
+
+  function mockSend(){
+    document.getElementById('modalSuccess').classList.add('show');
+    document.getElementById('modalSendBtn').style.display = 'none';
+    showToast('Request sent (demo)');
+  }
+
+  let toastTimer = null;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+</script>
+</body>
+</html>
