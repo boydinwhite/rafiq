@@ -704,7 +704,26 @@
     }
   }
 
-  function speakOutput(){
+  function getSpeechVoices(){
+    return new Promise(resolve => {
+      const voices = speechSynthesis.getVoices();
+      if(voices.length){
+        resolve(voices);
+        return;
+      }
+      const onVoicesChanged = () => {
+        speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+        resolve(speechSynthesis.getVoices());
+      };
+      speechSynthesis.addEventListener('voiceschanged', onVoicesChanged, {once:true});
+      setTimeout(() => {
+        speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+        resolve(speechSynthesis.getVoices());
+      }, 1000);
+    });
+  }
+
+  async function speakOutput(){
     if(!currentText){
       showToast(language === 'ar' ? 'لا يوجد نص لنطقه بعد' : 'No text to speak yet');
       return;
@@ -713,11 +732,17 @@
       showToast(language === 'ar' ? 'هذا المتصفح لا يدعم تحويل النص إلى كلام' : 'This browser does not support text-to-speech');
       return;
     }
+    const isArabic = language === 'ar';
     const utter = new SpeechSynthesisUtterance(currentText);
-    utter.lang = language === 'ar' ? 'ar-SA' : 'en-US';
-    const voices = speechSynthesis.getVoices();
-    const enVoice = voices.find(v => v.lang && v.lang.startsWith('en'));
-    if(enVoice) utter.voice = enVoice;
+    utter.lang = isArabic ? 'ar-SA' : 'en-US';
+    const voices = await getSpeechVoices();
+    const voice = voices.find(item => item.lang && (isArabic
+      ? item.lang.toLowerCase().startsWith('ar')
+      : item.lang.toLowerCase().startsWith('en')));
+    if(voice) utter.voice = voice;
+    if(isArabic && !voice){
+      showToast('لا يوجد صوت عربي مثبت — ثبّت حزمة اللغة العربية في إعدادات الجهاز');
+    }
     speechSynthesis.cancel();
     speechSynthesis.speak(utter);
   }
